@@ -197,20 +197,28 @@ td.actions { text-align: center; white-space: nowrap; }
 .footer-note { max-width: 820px; margin: 18px auto 0; text-align: center; font-size: 11px; color: rgba(245,234,208,.3); font-family: 'Cinzel', serif; letter-spacing: 1px; }
 
 /* PASSWORD MODAL */
-.pwd-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(10,5,0,.92); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
+.pwd-overlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(10,5,0,.95); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px; }
 .pwd-overlay.open { display: flex; }
 .pwd-box { background: var(--cream); border-radius: 8px; width: 100%; max-width: 340px; overflow: hidden; box-shadow: 0 0 0 4px var(--wood-light), 0 0 0 7px var(--wood-mid), 0 20px 60px rgba(0,0,0,.8); animation: popIn .2s ease; }
-.pwd-header { background: var(--red-sign); padding: 20px; text-align: center; border-bottom: 2px solid var(--gold); }
+.pwd-header { background: var(--red-sign); padding: 22px 20px 18px; text-align: center; border-bottom: 2px solid var(--gold); }
 .pwd-header h2 { font-family: 'Cinzel Decorative', cursive; font-size: 18px; color: var(--gold-light); }
 .pwd-header p { font-family: 'IM Fell English', serif; font-size: 13px; color: rgba(245,234,208,.7); margin-top: 6px; }
 .pwd-body { padding: 24px 20px; }
-.pwd-body input { width: 100%; border: 1px solid var(--cream-dark); border-radius: 4px; padding: 12px; font-family: 'EB Garamond', serif; font-size: 20px; color: var(--text-dark); background: #fffdf7; outline: none; text-align: center; letter-spacing: 6px; transition: border-color .2s; }
-.pwd-body input:focus { border-color: var(--gold); }
-.pwd-error { color: #c0392b; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; text-align: center; margin-top: 8px; min-height: 18px; }
-.pwd-btn { width: 100%; background: var(--green-old); color: var(--cream); border: none; border-radius: 4px; padding: 12px; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; margin-top: 12px; transition: background .2s; }
-.pwd-btn:hover { background: #3a7533; }
-
-/* Lucchetto per utenti non autenticati */
+.pwd-choices { display: flex; flex-direction: column; gap: 12px; }
+.btn-guest { background: var(--wood-mid); color: var(--cream); border: 1px solid var(--wood-light); border-radius: 6px; padding: 14px; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: background .2s; }
+.btn-guest:hover { background: var(--wood-light); }
+.btn-owner { background: var(--green-old); color: var(--cream); border: none; border-radius: 6px; padding: 14px; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: background .2s; }
+.btn-owner:hover { background: #3a7533; }
+.pwd-divider { display: flex; align-items: center; gap: 10px; color: rgba(90,50,20,.4); font-size: 11px; font-family: 'Cinzel', serif; margin: 4px 0; }
+.pwd-divider::before, .pwd-divider::after { content: ''; flex: 1; height: 1px; background: var(--cream-dark); }
+.pwd-input-wrap { display: none; }
+.pwd-input-wrap.open { display: block; }
+.pwd-input-wrap input { width: 100%; border: 1px solid var(--cream-dark); border-radius: 4px; padding: 12px; font-family: 'EB Garamond', serif; font-size: 20px; color: var(--text-dark); background: #fffdf7; outline: none; text-align: center; letter-spacing: 6px; transition: border-color .2s; margin-bottom: 8px; }
+.pwd-input-wrap input:focus { border-color: var(--gold); }
+.pwd-error { color: #c0392b; font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 1px; text-align: center; margin-bottom: 8px; min-height: 16px; }
+.btn-pwd-confirm { width: 100%; background: var(--green-old); color: var(--cream); border: none; border-radius: 4px; padding: 11px; font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 1px; cursor: pointer; transition: background .2s; }
+.btn-pwd-confirm:hover { background: #3a7533; }
+.btn-back-choices { background: none; border: none; color: var(--wood-light); font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 1px; cursor: pointer; margin-top: 10px; display: block; width: 100%; text-align: center; text-decoration: underline; }
 .lock-hint { font-size: 11px; color: rgba(245,234,208,.4); font-family: 'Cinzel', serif; text-align: center; margin-top: 10px; cursor: pointer; }
 .lock-hint:hover { color: var(--gold); }
 
@@ -276,13 +284,21 @@ td.actions { text-align: center; white-space: nowrap; }
   <div class="pwd-box">
     <div class="pwd-header">
       <h2>I Miei Ristoranti</h2>
-      <p>Inserisci la password per modificare</p>
+      <p>Come vuoi accedere?</p>
     </div>
     <div class="pwd-body">
-      <input id="pwd-input" type="password" placeholder="••••" maxlength="20"
-        onkeydown="if(event.key==='Enter') checkPwd()">
-      <div class="pwd-error" id="pwd-error"></div>
-      <button class="pwd-btn" onclick="checkPwd()">Entra</button>
+      <div class="pwd-choices" id="pwd-choices">
+        <button class="btn-guest" onclick="enterAsGuest()">Entra come Ospite</button>
+        <div class="pwd-divider">oppure</div>
+        <button class="btn-owner" onclick="showPwdInput()">Entra come Proprietario</button>
+      </div>
+      <div class="pwd-input-wrap" id="pwd-input-wrap">
+        <input id="pwd-input" type="password" placeholder="••••" maxlength="20"
+          onkeydown="if(event.key==='Enter') checkPwd()">
+        <div class="pwd-error" id="pwd-error"></div>
+        <button class="btn-pwd-confirm" onclick="checkPwd()">Entra</button>
+        <button class="btn-back-choices" onclick="backToChoices()">← Torna indietro</button>
+      </div>
     </div>
   </div>
 </div>
@@ -314,8 +330,8 @@ td.actions { text-align: center; white-space: nowrap; }
       </div>
       <div class="field"><label>Indirizzo</label><input id="f-indirizzo" type="text" placeholder="es. Via Roma 1, Monza"></div>
       <div class="field-row">
-        <div class="field"><label>Sito web</label><input id="f-sito" type="url" placeholder="https://..."></div>
-        <div class="field"><label>Link GPS</label><input id="f-gps" type="url" placeholder="Google Maps URL"></div>
+        <div class="field"><label>Sito web (auto se vuoto)</label><input id="f-sito" type="url" placeholder="https://..."></div>
+        <div class="field"><label>Link GPS (auto se vuoto)</label><input id="f-gps" type="url" placeholder="Google Maps URL"></div>
       </div>
       <div class="field-row">
         <div class="field"><label>Tipo di cucina</label><input id="f-cucina" type="text" placeholder="es. Italiana, Pesce…"></div>
@@ -442,7 +458,10 @@ window.openDetail = key => {
   if (r.sito || r.gps) {
     html += `<div class="detail-card"><div class="detail-card-title">Link utili</div>`;
     if (r.gps) html += `<div class="detail-row"><span class="detail-icon">🧭</span><div><div class="detail-label">Navigazione GPS</div><div class="detail-value"><a href="${esc(r.gps)}" target="_blank">Apri in Maps →</a></div></div></div>`;
-    if (r.sito) html += `<div class="detail-row"><span class="detail-icon">🌐</span><div><div class="detail-label">Sito web</div><div class="detail-value"><a href="${esc(r.sito)}" target="_blank">${esc(r.sito).replace(/^https?:\/\//,'')}</a></div></div></div>`;
+    if (r.sito) {
+      const isAutoSito = r.sito.includes('google.com/search');
+      html += `<div class="detail-row"><span class="detail-icon">🌐</span><div><div class="detail-label">${isAutoSito ? 'Cerca online' : 'Sito web'}</div><div class="detail-value"><a href="${esc(r.sito)}" target="_blank">${isAutoSito ? 'Cerca su Google →' : esc(r.sito).replace(/^https?:\/\//,'')}</a></div></div></div>`;
+    }
     html += `</div>`;
   }
 
@@ -513,14 +532,30 @@ window.closeModal = () => document.getElementById('modal').classList.remove('ope
 window.save = () => {
   const nome = document.getElementById('f-nome').value.trim();
   if (!nome) { document.getElementById('f-nome').focus(); return; }
+  const localita = document.getElementById('f-localita').value.trim();
+
+  // Auto-genera link GPS se non inserito manualmente
+  let gps = document.getElementById('f-gps').value.trim();
+  if (!gps && nome) {
+    const q = encodeURIComponent(nome + (localita ? ' ' + localita : ''));
+    gps = 'https://www.google.com/maps/search/?api=1&query=' + q;
+  }
+
+  // Auto-genera link sito se non inserito manualmente
+  let sito = document.getElementById('f-sito').value.trim();
+  if (!sito && nome) {
+    const q = encodeURIComponent(nome + (localita ? ' ' + localita : '') + ' ristorante');
+    sito = 'https://www.google.com/search?q=' + q;
+  }
+
   const entry = {
     nome,
-    localita: document.getElementById('f-localita').value.trim(),
+    localita,
     telefono: document.getElementById('f-telefono').value.trim(),
     chiusura: document.getElementById('f-chiusura').value.trim(),
     indirizzo: document.getElementById('f-indirizzo').value.trim(),
-    sito: document.getElementById('f-sito').value.trim(),
-    gps: document.getElementById('f-gps').value.trim(),
+    sito,
+    gps,
     cucina: document.getElementById('f-cucina').value.trim(),
     prezzo: document.getElementById('f-prezzo').value,
     note: document.getElementById('f-note').value.trim()
@@ -538,7 +573,7 @@ window.sortBy = sortBy;
 // PASSWORD
 const PWD = '2304';
 const PWD_KEY = 'rist_auth';
-let isAuth = localStorage.getItem(PWD_KEY) === 'ok';
+let isAuth = localStorage.getItem(PWD_KEY) === 'owner';
 
 function updateAuthUI() {
   const addBtn = document.querySelector('.btn-add');
@@ -552,18 +587,38 @@ function updateAuthUI() {
   }
 }
 
-window.showPwdModal = () => {
-  document.getElementById('pwd-input').value = '';
+window.enterAsGuest = () => {
+  localStorage.setItem(PWD_KEY, 'guest');
+  isAuth = false;
+  document.getElementById('pwd-overlay').classList.remove('open');
+  updateAuthUI();
+  filterList(currentFilter);
+};
+
+window.showPwdInput = () => {
+  document.getElementById('pwd-choices').style.display = 'none';
+  document.getElementById('pwd-input-wrap').classList.add('open');
   document.getElementById('pwd-error').textContent = '';
-  document.getElementById('pwd-overlay').classList.add('open');
+  document.getElementById('pwd-input').value = '';
   setTimeout(() => document.getElementById('pwd-input').focus(), 100);
+};
+
+window.backToChoices = () => {
+  document.getElementById('pwd-choices').style.display = '';
+  document.getElementById('pwd-input-wrap').classList.remove('open');
+};
+
+window.showPwdModal = () => {
+  document.getElementById('pwd-choices').style.display = '';
+  document.getElementById('pwd-input-wrap').classList.remove('open');
+  document.getElementById('pwd-overlay').classList.add('open');
 };
 
 window.checkPwd = () => {
   const val = document.getElementById('pwd-input').value;
   if (val === PWD) {
     isAuth = true;
-    localStorage.setItem(PWD_KEY, 'ok');
+    localStorage.setItem(PWD_KEY, 'owner');
     document.getElementById('pwd-overlay').classList.remove('open');
     updateAuthUI();
     filterList(currentFilter);
@@ -574,10 +629,10 @@ window.checkPwd = () => {
   }
 };
 
-// Mostra il modal password al primo accesso
-if (!isAuth) {
+// Mostra il modal solo se non ha ancora scelto
+const savedAuth = localStorage.getItem(PWD_KEY);
+if (!savedAuth) {
   document.getElementById('pwd-overlay').classList.add('open');
-  setTimeout(() => document.getElementById('pwd-input').focus(), 300);
 }
 
 updateAuthUI();
