@@ -128,7 +128,7 @@ body {
 table {
   width: 100%; border-collapse: collapse;
   background: var(--cream); color: var(--text-dark);
-  font-size: 14px; min-width: 520px;
+  font-size: 14px; min-width: 0;
 }
 thead tr { background: var(--wood-mid); }
 th {
@@ -216,7 +216,14 @@ td.actions { text-align: center; white-space: nowrap; }
   font-size: 11px; color: rgba(245,234,208,.3);
   font-family: 'Cinzel', serif; letter-spacing: 1px;
 }
-@media (max-width: 480px) { th.telefono, td.telefono { display: none; } }
+@media (max-width: 600px) {
+  th.telefono, td.telefono { display: none; }
+  td { padding: 10px 10px; font-size: 13px; }
+  td.nome { font-size: 14px; }
+  th { padding: 10px 10px; font-size: 9px; letter-spacing: 1px; }
+  .table-scroll { overflow-x: hidden; }
+  body { padding: 12px 10px 60px; }
+}
 </style>
 </head>
 <body>
