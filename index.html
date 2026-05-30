@@ -360,28 +360,26 @@ td.actions { text-align: center; white-space: nowrap; }
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBWDyer9isL5t0G9r-u3e_5032YpROYMbc",
-  authDomain: "ristorante-ecbfd.firebaseapp.com",
-  databaseURL: "https://ristorante-ecbfd-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "ristorante-ecbfd",
-  storageBucket: "ristorante-ecbfd.firebasestorage.app",
-  messagingSenderId: "946539174852",
-  appId: "1:946539174852:web:a13b054098814ca93ba291"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const ristRef = ref(db, 'ristoranti');
-const DB_URL = firebaseConfig.databaseURL;
+const API_KEY     = "AIzaSyBWDyer9isL5t0G9r-u3e_5032YpROYMbc";
+const DB_URL      = "https://ristorante-ecbfd-default-rtdb.europe-west1.firebasedatabase.app";
 const OWNER_EMAIL = 'owner@ristoranti.app';
 
-// Auth REST API — funziona da file:// e HTTPS
+// Sign-in anonimo — permette letture con regola "auth != null"
+async function signInAnonymous() {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ returnSecureToken: true })
+  });
+  const json = await res.json();
+  if (json.error) throw new Error(json.error.message);
+  return json.idToken;
+}
+
+// Sign-in owner — per scritture
 async function restSignIn(email, password) {
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${firebaseConfig.apiKey}`, {
+  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, returnSecureToken: true })
@@ -408,7 +406,8 @@ async function dbDelete(path) {
   if (!res.ok) throw new Error('Eliminazione fallita');
 }
 
-let idToken = null;
+let anonToken = null;
+let idToken   = null;
 let data = [];
 let editingKey = null;
 let currentFilter = '';
@@ -416,17 +415,23 @@ let sortKey = 'nome';
 let sortDir = 1;
 let isAuth = false;
 
-onValue(ristRef, (snapshot) => {
-  const val = snapshot.val();
-  if (!val) return;
-  data = Object.entries(val).map(([key, v]) => ({ key, ...v }));
-  document.getElementById('sync-bar').textContent = '🟢 Sincronizzato in tempo reale';
-  document.getElementById('sync-bar').className = 'sync-bar online';
-  filterList(currentFilter);
-}, () => {
-  document.getElementById('sync-bar').textContent = '🔴 Errore di connessione';
-  document.getElementById('sync-bar').className = 'sync-bar offline';
-});
+// Lettura REST — usa token anonimo (o owner se autenticato)
+async function dbReadAll() {
+  const token = idToken || anonToken;
+  const url = token ? `${DB_URL}/ristoranti.json?auth=${token}` : `${DB_URL}/ristoranti.json`;
+  try {
+    const res = await fetch(url);
+    const val = await res.json();
+    if (!val || val.error) throw new Error('read error');
+    data = Object.entries(val).map(([key, v]) => ({ key, ...v }));
+    document.getElementById('sync-bar').textContent = '🟢 Sincronizzato';
+    document.getElementById('sync-bar').className = 'sync-bar online';
+    filterList(currentFilter);
+  } catch (e) {
+    document.getElementById('sync-bar').textContent = '🔴 Errore di connessione';
+    document.getElementById('sync-bar').className = 'sync-bar offline';
+  }
+}
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -546,7 +551,7 @@ window._del = key => {
   const r = data.find(d => d.key === key);
   if (r && confirm('Eliminare "' + r.nome + '"?')) {
     dbDelete('ristoranti/' + key)
-      .then(() => window.closeDetail())
+      .then(() => { window.closeDetail(); dbReadAll(); })
       .catch(() => alert('Errore durante eliminazione'));
   }
 };
@@ -587,6 +592,7 @@ window.save = async () => {
       await dbWrite('ristoranti', entry, 'POST');
     }
     window.closeModal();
+    dbReadAll();
     const toast = document.getElementById('toast');
     toast.textContent = editingKey ? '✓ Modifiche salvate' : '✓ Ristorante aggiunto';
     toast.classList.add('show');
@@ -673,6 +679,12 @@ document.getElementById('modal').addEventListener('click', e => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+
+// Avvio: sign-in anonimo poi carica dati
+(async () => {
+  try { anonToken = await signInAnonymous(); } catch (e) { console.warn('Anon sign-in:', e.message); }
+  dbReadAll();
+})();
 </script>
 </body>
 </html>
