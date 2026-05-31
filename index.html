@@ -361,21 +361,11 @@ td.actions { text-align: center; white-space: nowrap; }
 
 <script type="module">
 
-const API_KEY     = "AIzaSyBWDyer9isL5t0G9r-u3e_5032YpROYMbc";
-const DB_URL      = "https://ristorante-ecbfd-default-rtdb.europe-west1.firebasedatabase.app";
-const OWNER_EMAIL = 'owner@ristoranti.app';
-
-// Sign-in anonimo — permette letture con regola "auth != null"
-async function signInAnonymous() {
-  const res = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ returnSecureToken: true })
-  });
-  const json = await res.json();
-  if (json.error) throw new Error(json.error.message);
-  return json.idToken;
-}
+const API_KEY      = "AIzaSyBWDyer9isL5t0G9r-u3e_5032YpROYMbc";
+const DB_URL       = "https://ristorante-ecbfd-default-rtdb.europe-west1.firebasedatabase.app";
+const OWNER_EMAIL  = 'owner@ristoranti.app';
+const GUEST_EMAIL  = 'guest@ristoranti.app';
+const GUEST_PWD    = 'guest230400';
 
 // Sign-in owner — per scritture
 async function restSignIn(email, password) {
@@ -680,9 +670,9 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
-// Avvio: sign-in anonimo poi carica dati
+// Avvio: sign-in come guest poi carica dati
 (async () => {
-  try { anonToken = await signInAnonymous(); } catch (e) { console.warn('Anon sign-in:', e.message); }
+  try { anonToken = await restSignIn(GUEST_EMAIL, GUEST_PWD); } catch (e) { console.warn('Guest sign-in:', e.message); }
   dbReadAll();
 })();
 </script>
